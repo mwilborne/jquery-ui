@@ -49,7 +49,7 @@ var
 		options: {
 			preserveComments: false
 		},
-		main: {
+		bundle: {
 			options: {
 				banner: createBanner( uiFiles )
 			},
@@ -71,7 +71,7 @@ var
 		options: {
 			keepSpecialComments: 0
 		},
-		main: {
+		bundle: {
 			options: {
 				keepSpecialComments: "*"
 			},
@@ -179,7 +179,7 @@ grunt.initConfig({
 		})
 	},
 	copy: {
-		distBundleJs: {
+		bundle: {
 			src: "dist/build/jquery-ui.js",
 			strip: /^dist\/build\//,
 			dest: "dist/"
@@ -198,7 +198,7 @@ grunt.initConfig({
 		})
 	},
 	jshint: {
-		distBundleJs: {
+		bundle: {
 			options: {
 				jshintrc: ".bundlejshintrc"
 			},
@@ -320,8 +320,8 @@ grunt.registerMultiTask( "postRequirejs", "Strip define call from dist file", fu
 grunt.registerTask( "default", [ "lint", "test" ] );
 grunt.registerTask( "lint", [ "jshint", "csslint", "htmllint" ] );
 grunt.registerTask( "test", [ "copy:dist_units_images", "qunit" ] );
-grunt.registerTask( "sizer", [ "concat:ui", "uglify:main", "compare_size:all" ] );
+grunt.registerTask( "sizer", [ "concat:ui", "uglify:bundle", "compare_size:all" ] );
 grunt.registerTask( "sizer_all", [ "concat:ui", "uglify", "compare_size" ] );
-grunt.registerTask( "build", [ "clean", "preRequirejs", "requirejs", "postRequirejs", "copy:distBundleJs", "clean:distGarbage", "jshint:distBundleJs" ] );
+grunt.registerTask( "build", [ "clean", "preRequirejs", "requirejs", "postRequirejs", "copy:bundle", "clean:distGarbage", "jshint:bundle", "uglify:bundle" ] );
 
 };
