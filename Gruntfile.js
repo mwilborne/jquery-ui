@@ -49,7 +49,7 @@ var
 		options: {
 			preserveComments: false
 		},
-		bundle: {
+		bundleJs: {
 			options: {
 				banner: createBanner( uiFiles )
 			},
@@ -57,7 +57,7 @@ var
 				"dist/jquery-ui.min.js": "dist/jquery-ui.js"
 			}
 		},
-		i18n: {
+		bundleI18n: {
 			options: {
 				banner: createBanner( allI18nFiles )
 			},
@@ -179,11 +179,6 @@ grunt.initConfig({
 		})
 	},
 	copy: {
-		bundle: {
-			src: "dist/build/jquery-ui.js",
-			strip: /^dist\/build\//,
-			dest: "dist/"
-		},
 		dist_units_images: {
 			src: "themes/base/images/*",
 			strip: /^themes\/base\//,
@@ -198,12 +193,20 @@ grunt.initConfig({
 		})
 	},
 	jshint: {
-		bundle: {
+		bundleJs: {
 			options: {
 				jshintrc: ".bundlejshintrc"
 			},
 			files: {
 				src: "dist/jquery-ui.js"
+			}
+		},
+		bundleI18n: {
+			options: {
+				jshintrc: ".bundlejshintrc"
+			},
+			files: {
+				src: "dist/jquery-ui-i18n.js"
 			}
 		},
 		ui: {
@@ -240,59 +243,75 @@ grunt.initConfig({
 		}
 	},
 	preRequirejs: {
-		all: {
-			components: coreFiles.concat( uiFiles.map(function( file ) {
+		bundle: {
+			components: uiFiles.map(function( file ) {
 				return file.replace( /ui\//, "" );
-			}) ),
+			}),
 			dest: "dist/tmp/main.js"
+		},
+		bundleI18n: {
+			components: allI18nFiles.map(function( file ) {
+				return file.replace( /ui\//, "" );
+			}),
+			dest: "dist/tmp/mainI18n.js"
 		}
 	},
 	requirejs: {
-		all: {
+		options: {
+			dir: "dist/build",
+			appDir: "ui",
+			baseUrl: ".",
+			optimize: "none",
+			optimizeCss: "none",
+			paths: {
+				jquery: "../jquery-1.9.1",
+				jqueryui: ".",
+				tmp: "../dist/tmp"
+			},
+			wrap: {
+				start: createBanner() + "(function( $ ) {",
+				end: "})( jQuery );"
+			},
+			onBuildWrite: function ( id, path, contents ) {
+				if ( (/define\([\s\S]*?factory/).test( contents ) ) {
+					// Remove UMD wrapper
+					contents = contents.replace( /\(function\( factory[\s\S]*?\(function\( \$ \) \{/, "" );
+					contents = contents.replace( /\}\)\);\s*?$/, "" );
+				}
+				else if ( (/^require\(\[/).test( contents ) ) {
+					// Replace require with comment `//` instead of null string, because of the mysterious semicolon
+					contents = contents.replace( /^require[\s\S]*?\]\);$/, "// mysterious semicolon: " );
+				}
+				return contents;
+			}
+		},
+		bundle: {
 			options: {
-				dir: "dist/build",
-				appDir: "ui",
-				baseUrl: ".",
-				optimize: "none",
-				optimizeCss: "none",
-				paths: {
-					jquery: "../jquery-1.9.1",
-					jqueryui: ".",
-					main: "../dist/tmp/main"
-				},
-				/* try use include: [] instead adding dist/tmp/main with require(...) */
 				modules: [{
-					name: "jquery-ui",
-					include: [ "main" ],
+					name: "../jquery-ui",
+					include: [ "tmp/main" ],
 					exclude: [ "jquery" ],
 					create: true
-				}],
-				wrap: {
-					start: createBanner() + "(function( $ ) {",
-					end: "})( jQuery );"
-				},
-				onBuildWrite: function ( id, path, contents ) {
-					if ( (/define\([\s\S]*?factory/).test( contents ) ) {
-						// Remove UMD wrapper
-						contents = contents.replace( /\(function\( factory[\s\S]*?\(function\( \$ \) \{/, "" );
-						contents = contents.replace( /\}\)\);\s*?$/, "" );
-					}
-					else if ( (/^require\(\[/).test( contents ) ) {
-						// Replace require with comment `//` instead of null string, because of the mysterious semicolon
-						contents = contents.replace( /^require[\s\S]*?\]\);$/, "// mysterious semicolon: " );
-					}
-
-					return contents;
-				}
+				}]
+			}
+		},
+		bundleI18n: {
+			options: {
+				modules: [{
+					name: "../i18n/jquery-ui-i18n",
+					include: [ "tmp/mainI18n" ],
+					exclude: [ "jquery", "jqueryui/jquery.ui.core", "jqueryui/jquery.ui.datepicker" ],
+					create: true
+				}]
 			}
 		}
 	},
 	postRequirejs: {
-		all: [
-			"dist/build/jquery-ui.js"
-		]
+		bundle: [ "dist/build/jquery-ui.js" ],
+		bundleI18n: [ "dist/build/jquery-ui-i18n.js" ]
 	},
 	clean: {
+		dist: [ "dist" ],
 		distGarbage: [ "dist/build", "dist/tmp" ]
 	}
 });
@@ -320,8 +339,8 @@ grunt.registerMultiTask( "postRequirejs", "Strip define call from dist file", fu
 grunt.registerTask( "default", [ "lint", "test" ] );
 grunt.registerTask( "lint", [ "jshint", "csslint", "htmllint" ] );
 grunt.registerTask( "test", [ "copy:dist_units_images", "qunit" ] );
-grunt.registerTask( "sizer", [ "concat:ui", "uglify:bundle", "compare_size:all" ] );
-grunt.registerTask( "sizer_all", [ "concat:ui", "uglify", "compare_size" ] );
-grunt.registerTask( "build", [ "clean", "preRequirejs", "requirejs", "postRequirejs", "copy:bundle", "clean:distGarbage", "jshint:bundle", "uglify:bundle" ] );
+grunt.registerTask( "sizer", [ "concat:ui", "uglify:bundle", "compare_size:bundle" ] );
+grunt.registerTask( "sizer_all", [ "concat:ui", "uglify", "cssmin", "compare_size" ] );
+grunt.registerTask( "build", [ "clean", "preRequirejs", "requirejs", "postRequirejs", "clean:distGarbage", "jshint:bundleJs", "uglify:bundleJs", "uglify:bundleI18n", "concat:css", "cssmin:bundle" ] );
 
 };
