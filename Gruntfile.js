@@ -179,7 +179,7 @@ grunt.initConfig({
 		})
 	},
 	copy: {
-		dist_bundle_js: {
+		distBundleJs: {
 			src: "dist/build/jquery-ui.js",
 			strip: /^dist\/build\//,
 			dest: "dist/"
@@ -198,7 +198,7 @@ grunt.initConfig({
 		})
 	},
 	jshint: {
-		dist_bundle_js: {
+		distBundleJs: {
 			options: {
 				jshintrc: ".bundlejshintrc"
 			},
@@ -293,7 +293,7 @@ grunt.initConfig({
 		]
 	},
 	clean: {
-		dist_garbage: [ "dist/build", "dist/tmp" ]
+		distGarbage: [ "dist/build", "dist/tmp" ]
 	}
 });
 
@@ -322,6 +322,6 @@ grunt.registerTask( "lint", [ "jshint", "csslint", "htmllint" ] );
 grunt.registerTask( "test", [ "copy:dist_units_images", "qunit" ] );
 grunt.registerTask( "sizer", [ "concat:ui", "uglify:main", "compare_size:all" ] );
 grunt.registerTask( "sizer_all", [ "concat:ui", "uglify", "compare_size" ] );
-grunt.registerTask( "build", [ "clean", "preRequirejs", "requirejs", "postRequirejs", "copy:dist_bundle_js", "clean:dist_garbage", "jshint:dist_bundle_js" ] );
+grunt.registerTask( "build", [ "clean", "preRequirejs", "requirejs", "postRequirejs", "copy:distBundleJs", "clean:distGarbage", "jshint:distBundleJs" ] );
 
 };
