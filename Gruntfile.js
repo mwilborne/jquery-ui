@@ -239,7 +239,7 @@ grunt.initConfig({
 			}
 		}
 	},
-	"pre-requirejs" : {
+	preRequirejs: {
 		all: {
 			components: coreFiles.concat( uiFiles.map(function( file ) {
 				return file.replace( /ui\//, "" );
@@ -256,16 +256,16 @@ grunt.initConfig({
 				optimize: "none",
 				optimizeCss: "none",
 				paths: {
-					"jquery": "../jquery-1.9.1",
-					"jqueryui": ".",
-					"main" : "../dist/tmp/main" // FIXME replace to <%= %>
+					jquery: "../jquery-1.9.1",
+					jqueryui: ".",
+					main: "../dist/tmp/main"
 				},
 				/* try use include: [] instead adding dist/tmp/main with require(...) */
-				modules : [{
-					name : "jquery-ui",
-					include : [ "main" ],
+				modules: [{
+					name: "jquery-ui",
+					include: [ "main" ],
 					exclude: [ "jquery" ],
-					create : true
+					create: true
 				}],
 				wrap: {
 					start: createBanner() + "(function( $ ) {",
@@ -287,7 +287,7 @@ grunt.initConfig({
 			}
 		}
 	},
-	"post-requirejs": {
+	postRequirejs: {
 		all: [
 			"dist/build/jquery-ui.js"
 		]
@@ -297,7 +297,7 @@ grunt.initConfig({
 	}
 });
 
-grunt.registerMultiTask( "pre-requirejs", "Create require that will include appropriate components' dependencies", function() {
+grunt.registerMultiTask( "preRequirejs", "Create require that will include appropriate components' dependencies", function() {
 	if ( this.data.components.length ) {
 		grunt.file.write( this.data.dest, "require([\n\t\"jqueryui/" + this.data.components.map(function( file ) {
 			return file.replace( /\.js/, "" );
@@ -305,7 +305,7 @@ grunt.registerMultiTask( "pre-requirejs", "Create require that will include appr
 	}
 });
 
-grunt.registerMultiTask( "post-requirejs", "Strip define call from dist file", function() {
+grunt.registerMultiTask( "postRequirejs", "Strip define call from dist file", function() {
 	this.filesSrc.forEach(function( filepath ) {
 		// Remove `define("main" ...)` and `define("jquery-ui" ...)`
 		var contents = grunt.file.read( filepath ).replace( /define\("(main|jquery-ui)", function\(\)\{\}\);/g, "" );
@@ -322,7 +322,6 @@ grunt.registerTask( "lint", [ "jshint", "csslint", "htmllint" ] );
 grunt.registerTask( "test", [ "copy:dist_units_images", "qunit" ] );
 grunt.registerTask( "sizer", [ "concat:ui", "uglify:main", "compare_size:all" ] );
 grunt.registerTask( "sizer_all", [ "concat:ui", "uglify", "compare_size" ] );
-
-grunt.registerTask( "build", [ "clean", "pre-requirejs", "requirejs", "post-requirejs", "copy:dist_bundle_js", "clean:dist_garbage", "jshint:dist_bundle_js" ] );
+grunt.registerTask( "build", [ "clean", "preRequirejs", "requirejs", "postRequirejs", "copy:dist_bundle_js", "clean:dist_garbage", "jshint:dist_bundle_js" ] );
 
 };
