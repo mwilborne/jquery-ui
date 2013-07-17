@@ -17,8 +17,8 @@
 		// AMD. Register as an anonymous module.
 		define([
 			"jquery",
-			"jqueryui/jquery.ui.effect",
-			"jqueryui/jquery.ui.effect-size"
+			"./jquery.ui.effect",
+			"./jquery.ui.effect-size"
 		], factory );
 	} else {
 		// Browser globals
