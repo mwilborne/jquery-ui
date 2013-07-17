@@ -5,6 +5,7 @@
 		// AMD. Register as an anonymous module.
 		define([
 			"jquery",
+			"../jquery.ui.datepicker"
 		], factory );
 	} else {
 		// Browser globals
