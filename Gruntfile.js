@@ -325,5 +325,4 @@ grunt.registerTask( "sizer_all", [ "concat:ui", "uglify", "compare_size" ] );
 
 grunt.registerTask( "build", [ "clean", "pre-requirejs", "requirejs", "post-requirejs", "copy:dist_bundle_js", "clean:dist_garbage", "jshint:dist_bundle_js" ] );
 
-
 };
